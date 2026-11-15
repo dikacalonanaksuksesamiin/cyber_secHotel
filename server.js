@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const helmet = require('helmet'); // <-- 1. Import Helmet untuk amankan HTTP headers
 const path = require('path');
 const db = require('./config/db');
@@ -32,21 +32,22 @@ app.use(session({
     saveUninitialized: false
 }));
 
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'rahasia',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // true jika di Vercel (HTTPS)
-        httpOnly: true,
-        sameSite: 'lax'
-    }
+app.use(cookieSession({
+    name: 'session_hotel_ayong',
+    keys: [process.env.SESSION_SECRET || 'rahasia_hotel_ayong'],
+    maxAge: 24 * 60 * 60 * 1000, // Berlaku 24 jam
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
 }));
 
 // Middleware Global untuk Session Customer & Admin
 app.use((req, res, next) => {
-    res.locals.customer = req.session.customerName || null;
-    res.locals.isAdmin = req.session.isAdmin || false;
+    if (req.session && !req.session.destroy) {
+        req.session.destroy = (cb) => {
+            req.session = null;
+            if (cb) cb();
+        };
+    }
     next();
 });
 
