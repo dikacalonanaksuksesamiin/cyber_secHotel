@@ -39,6 +39,9 @@ app.use(cookieSession({
 // Penyesuaian kompatibilitas method express-session
 app.use((req, res, next) => {
     if (req.session) {
+        if (!req.session.cookie) {
+            req.session.cookie = {};
+        }
         if (!req.session.destroy) {
             req.session.destroy = (cb) => {
                 req.session = null;

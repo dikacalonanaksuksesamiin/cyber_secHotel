@@ -15,11 +15,6 @@ const adminLoginLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Terapkan pada rute login admin
-router.post('/login', adminLoginLimiter, async (req, res) => {
-    // ... logika login admin Anda yang sudah ada ...
-});
-
 // Konfigurasi Penyimpanan Gambar dengan Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -48,7 +43,7 @@ router.get('/login', (req, res) => {
     res.render('login', { error: null, isAdmin: true });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', adminLoginLimiter, async (req, res) => {
     const { username, password } = req.body;
     try {
         const result = await db.query('SELECT * FROM admin WHERE username = $1', [username]);
@@ -61,10 +56,10 @@ router.post('/login', async (req, res) => {
                 return res.redirect('/admin/dashboard');
             }
         }
-        res.render('admin_login', { error: 'Username atau password salah!' });
+        res.render('login', { error: 'Username atau password salah!', isAdmin: true });
     } catch (err) {
         console.error(err);
-        res.render('admin_login', { error: 'Terjadi kesalahan pada server.' });
+        res.render('login', { error: 'Terjadi kesalahan pada server.', isAdmin: true });
     }
 });
 
