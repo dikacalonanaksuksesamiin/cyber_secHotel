@@ -1,0 +1,212 @@
+<%- include('partials/header') %>
+
+    <style>
+        .auth-wrapper {
+            min-height: 75vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ffffff;
+            border-radius: 16px;
+            padding: 2rem 1rem;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-title {
+            color: #0f292e;
+            font-weight: 700;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-subtitle {
+            color: #7b8794;
+            font-size: 0.95rem;
+        }
+
+        .auth-label {
+            color: #7b8794;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .auth-input {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 0.95rem;
+            color: #1f2937;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: #3b28cc;
+            box-shadow: 0 0 0 3px rgba(59, 40, 204, 0.12);
+            outline: none;
+        }
+
+        .auth-checkbox {
+            accent-color: #3b28cc;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .auth-link {
+            color: #3b28cc;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn-auth-primary {
+            background-color: #3b28cc;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px;
+            font-size: 0.95rem;
+            transition: background-color 0.2s;
+        }
+
+        .btn-auth-primary:hover {
+            background-color: #2e1fa3;
+            color: #ffffff;
+        }
+
+        .forgot-info-box {
+            background-color: #f4f3ff;
+            border-left: 4px solid #3b28cc;
+            color: #1f2937;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            display: none;
+        }
+    </style>
+
+    <div class="container px-3">
+        <div class="auth-wrapper shadow-sm my-3 mx-auto">
+            <div class="auth-box">
+                <!-- Logo -->
+                <div class="text-center mb-3">
+                    <img src="/images/logo.png" alt="Logo Hotel AYONG"
+                        style="width: 64px; height: 64px; object-fit: contain;" onerror="this.style.display='none'">
+                </div>
+
+                <div class="text-center mb-4">
+                    <!-- Judul berubah otomatis tergantung apakah ini Admin atau Customer -->
+                    <h1 class="auth-title mb-2"><%= typeof isAdmin !== 'undefined' && isAdmin ? 'Admin Log In' : 'Log In' %></h1>
+                    <p class="auth-subtitle mb-0"><%= typeof isAdmin !== 'undefined' && isAdmin ? 'Masukkan kredensial admin Anda di bawah ini' : 'Silakan masukkan detail login Anda di bawah ini' %></p>
+                </div>
+
+                <% if (typeof error !== 'undefined' && error) { %>
+                    <div class="alert alert-danger py-2 small rounded-3 mb-3" role="alert">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <% if (typeof success !== 'undefined' && success) { %>
+                    <div class="alert alert-success py-2 small rounded-3 mb-3" role="alert">
+                        <%= success %>
+                    </div>
+                <% } %>
+
+                <!-- Kotak Pesan Lupa Password (Hanya muncul untuk Customer) -->
+                <% if (typeof isAdmin === 'undefined' || !isAdmin) { %>
+                    <div id="forgotPasswordBox" class="forgot-info-box mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <strong style="color: #3b28cc;">Ajukan Reset Password</strong>
+                            <button type="button" class="btn-close" style="font-size: 0.7rem;"
+                                onclick="toggleForgotBox()"></button>
+                        </div>
+                        <p class="small text-muted mb-2">Masukkan email terdaftar Anda untuk mengirim permintaan
+                            reset ke Admin:</p>
+                        <form action="/forgot-password" method="POST" class="d-flex gap-2">
+                            <input type="email" name="email" class="form-control form-control-sm"
+                                placeholder="nama@email.com" required>
+                            <button type="submit" class="btn btn-sm text-white fw-semibold"
+                                style="background-color: #3b28cc;">Kirim</button>
+                        </form>
+                    </div>
+                <% } %>
+
+                <!-- Form action berubah dinamis: /admin/login atau /login -->
+                <form action="<%= typeof isAdmin !== 'undefined' && isAdmin ? '/admin/login' : '/login' %>" method="POST">
+                    
+                    <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                        <!-- Input Khusus Admin (Username) -->
+                        <div class="mb-3">
+                            <label class="form-label auth-label">Username</label>
+                            <input type="text" name="username" class="form-control auth-input" required
+                                placeholder="Masukkan username admin">
+                        </div>
+                    <% } else { %>
+                        <!-- Input Khusus Customer (Email) -->
+                        <div class="mb-3">
+                            <label class="form-label auth-label">Email</label>
+                            <input type="email" name="email" class="form-control auth-input" required
+                                placeholder="nama@email.com">
+                        </div>
+                    <% } %>
+
+                    <div class="mb-3">
+                        <label class="form-label auth-label">Password</label>
+                        <input type="password" name="password" class="form-control auth-input" required
+                            placeholder="•••••••••">
+                    </div>
+
+                    <!-- Opsi Tambahan (Hanya muncul untuk Customer) -->
+                    <% if (typeof isAdmin === 'undefined' || !isAdmin) { %>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check d-flex align-items-center gap-2 m-0 ps-0">
+                                <input type="checkbox" name="remember" class="auth-checkbox" id="rememberMe">
+                                <label class="small text-secondary" for="rememberMe"
+                                    style="cursor: pointer;">Ingat saya</label>
+                            </div>
+                            <a href="#" class="auth-link" onclick="toggleForgotBox(); return false;">Lupa
+                                password?</a>
+                        </div>
+                    <% } else { %>
+                        <div class="mb-4"></div>
+                    <% } %>
+
+                    <button type="submit" class="btn btn-auth-primary w-100 mb-3">Log in</button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <% if (typeof isAdmin !== 'undefined' && isAdmin) { %>
+                        <a href="/" class="text-decoration-none small text-muted">← Kembali ke Beranda</a>
+                    <% } else { %>
+                        <span class="small text-muted">Belum punya akun?</span>
+                        <a href="/register" class="auth-link ms-1">Daftar di sini</a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleForgotBox() {
+            const box = document.getElementById('forgotPasswordBox');
+            if (box) {
+                if (box.style.display === 'none' || box.style.display === '') {
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            }
+        }
+    </script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Reservasi - Hotel AYONG</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Mengatur ukuran kertas dan orientasi Landscape otomatis saat diprint */
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+        body {
+            background-color: #ffffff;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        .report-header {
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100% !important;
+            font-size: 12px;
+        }
+        th, td {
+            vertical-align: middle !important;
+            padding: 6px 8px !important;
+        }
+        /* Kelas untuk menyembunyikan tombol navigasi saat dicetak */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                padding: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-3">
+
+    <div class="container-fluid">
+        <!-- Header Laporan -->
+        <div class="report-header text-center">
+            <div class="d-flex justify-content-center align-items-center gap-2 mb-1">
+                <img src="/images/logo.png" alt="Logo Hotel AYONG" style="width: 38px; height: 38px; object-fit: contain;" onerror="this.style.display='none'">
+                <h3 class="fw-bold mb-0" style="font-size: 1.5rem;">HOTEL AYONG</h3>
+            </div>
+            <p class="text-muted mb-1 small">Laporan Resmi Rekapitulasi Reservasi Kamar Pelanggan</p>
+            <small class="text-muted">Dicetak pada: <%= new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></small>
+        </div>
+
+        <!-- Tombol Cetak / Kembali (Hanya muncul di layar, hilang saat diprint) -->
+        <div class="mb-3 d-flex justify-content-between no-print">
+            <a href="/admin/dashboard" class="btn btn-secondary btn-sm">← Kembali ke Dashboard</a>
+            <button onclick="window.print()" class="btn btn-dark btn-sm fw-bold">🖨️ Cetak / Simpan PDF</button>
+        </div>
+
+        <!-- Tabel Data Reservasi -->
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 25%;">Nama Pemesan</th>
+                    <th style="width: 15%;">Kontak</th>
+                    <th style="width: 20%;">Kamar Dipesan</th>
+                    <th style="width: 12%;">Check-In</th>
+                    <th style="width: 12%;">Check-Out</th>
+                    <th style="width: 11%;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (reservasi && reservasi.length > 0) { %>
+                    <% reservasi.forEach((r, index) => { %>
+                        <tr>
+                            <td class="text-center fw-bold"><%= index + 1 %></td>
+                            <td>
+                                <strong><%= r.nama_pemesan %></strong><br>
+                                <small class="text-muted"><%= r.email || '-' %></small>
+                            </td>
+                            <td><%= r.telepon %></td>
+                            <td class="fw-semibold text-primary"><%= r.nama_kamar %></td>
+                            <td class="text-center"><%= typeof r.tanggal_checkin === 'object' ? r.tanggal_checkin.toISOString().split('T')[0] : r.tanggal_checkin %></td>
+                            <td class="text-center"><%= typeof r.tanggal_checkout === 'object' ? r.tanggal_checkout.toISOString().split('T')[0] : r.tanggal_checkout %></td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary"><%= r.status %></span>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            Belum ada data reservasi yang tercatat dalam sistem.
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <!-- Tanda Tangan / Footer Laporan (Akan ikut tercetak rapi di PDF) -->
+        <div class="row mt-4">
+            <div class="col-8"></div>
+            <div class="col-4 text-center">
+                <p class="mb-5 small">Mengetahui,<br><strong>Pimpinan Hotel AYONG</strong></p>
+                <br><br>
+                <p class="fw-bold text-decoration-underline mb-0 small">Admin Hotel</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

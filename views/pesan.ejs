@@ -1,0 +1,76 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center my-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 p-4">
+            <h3 class="fw-bold mb-3 text-dark">🏨 Form Pemesanan Kamar</h3>
+            <hr>
+
+            <!-- Info Kamar yang Dipilih -->
+            <div class="row mb-4 align-items-center bg-light p-3 rounded">
+                <div class="col-md-4">
+                    <% if (kamar.foto) { %>
+                        <img src="/uploads/<%= kamar.foto %>" alt="Foto" class="img-fluid rounded border" style="height: 120px; object-fit: cover; width: 100%;">
+                    <% } else { %>
+                        <div class="bg-secondary text-white text-center rounded d-flex align-items-center justify-content-center" style="height: 120px;">
+                            <span>Tanpa Foto</span>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="col-md-8">
+                    <h5 class="fw-bold text-primary mb-1"><%= kamar.nama_kamar %></h5>
+                    <p class="text-muted small mb-2"><%= kamar.keterangan || 'Kamar nyaman dan bersih.' %></p>
+                    <h6 class="text-success fw-bold mb-0">Rp <%= Number(kamar.harga).toLocaleString('id-ID') %> / malam</h6>
+                </div>
+            </div>
+
+            <!-- Pesan Sukses / Error -->
+            <% if (success) { %>
+                <div class="alert alert-success text-center" role="alert">
+                    <%= success %>
+                    <br><br>
+                    <a href="/" class="btn btn-sm btn-dark">Kembali ke Beranda</a>
+                </div>
+            <% } else { %>
+
+                <% if (error) { %>
+                    <div class="alert alert-danger" role="alert"><%= error %></div>
+                <% } %>
+
+                <form action="/pesan/<%= kamar.id %>" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Lengkap Pemesan</label>
+                        <input type="text" name="nama_pemesan" class="form-control" required placeholder="Masukkan nama Anda">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control" placeholder="nama@email.com">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Nomor Telepon / WhatsApp</label>
+                            <input type="text" name="telepon" class="form-control" required placeholder="08xxxxxxxxxx">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Tanggal Check-In</label>
+                            <input type="date" name="tanggal_checkin" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Tanggal Check-Out</label>
+                            <input type="date" name="tanggal_checkout" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="/" class="btn btn-secondary">Batal</a>
+                        <button type="submit" class="btn btn-dark fw-bold px-4">Kirim Pesanan</button>
+                    </div>
+                </form>
+
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

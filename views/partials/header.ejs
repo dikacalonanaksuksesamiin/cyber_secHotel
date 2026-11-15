@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel AYONG</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+    <!-- Navbar Website -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/">
+                <img src="/images/ayong.png" alt="Logo Hotel AYONG"
+                    style="width: 32px; height: 32px; object-fit: contain;" onerror="this.style.display='none'">
+                <span>Hotel AYONG</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Beranda</a>
+                    </li>
+
+                    <!-- 1. Jika ADMIN Sedang Login -->
+                    <% if (typeof isAdmin !=='undefined' && isAdmin) { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/dashboard">Dashboard Admin</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a href="/admin/logout" class="btn btn-outline-danger btn-sm fw-semibold">Logout Admin</a>
+                        </li>
+
+                        <!-- 2. Jika CUSTOMER Sedang Login -->
+                        <% } else if (typeof customer !=='undefined' && customer) { %>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/riwayat">📦 Riwayat Pemesanan</a>
+                            </li>
+                            <li class="nav-item ms-2">
+                                <span class="navbar-text text-light small me-3">Halo, <strong>
+                                        <%= customer %>
+                                    </strong></span>
+                            </li>
+                            <li class="nav-item">
+                                <a href="/logout" class="btn btn-outline-danger btn-sm fw-semibold">Logout</a>
+                            </li>
+
+                            <!-- 3. Jika Belum Login (Tamu / Publik) -->
+                            <% } else { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/login">Login Customer</a>
+                                </li>
+                                <li class="nav-item ms-1">
+                                    <a href="/admin/login"
+                                        class="btn btn-outline-secondary btn-sm text-light border-0">🔑 Login Admin</a>
+                                </li>
+                                <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mb-5">
