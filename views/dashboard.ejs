@@ -57,10 +57,10 @@
                                             <%= k.status %>
                                         </span>
                                     </td>
-                                    <td class="text-muted">
+                                    <td class="text-muted" style="max-width: 250px;">
                                         <%= k.keterangan || '-' %>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center text-nowrap">
                                         <a href="/admin/kamar/edit/<%= k.id %>"
                                             class="btn btn-warning btn-sm fw-semibold px-2 me-1">✏️ Edit</a>
                                         <a href="/admin/kamar/hapus/<%= k.id %>"
@@ -101,56 +101,57 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <% if (pelanggan && pelanggan.length > 0) { %>
-                            <% pelanggan.forEach((p, index) => { %>
+                        <% if (pelanggan && pelanggan.length> 0) { %>
+                            <% pelanggan.forEach((p, index)=> { %>
                                 <tr>
-                                    <td><%= index + 1 %></td>
+                                    <td>
+                                        <%= index + 1 %>
+                                    </td>
 
                                     <td class="fw-semibold">
                                         <%= p.nama %>
-                                        <% if (p.reset_requested) { %>
-                                            <span class="badge bg-danger ms-1">⚠️ Minta Reset</span>
-                                        <% } %>
+                                            <% if (p.reset_requested) { %>
+                                                <span class="badge bg-danger ms-1">⚠️ Minta Reset</span>
+                                                <% } %>
                                     </td>
 
-                                    <td><%= p.email %></td>
+                                    <td>
+                                        <%= p.email %>
+                                    </td>
 
                                     <td>
                                         <% if (p.reset_requested) { %>
                                             <span class="badge bg-danger">Menunggu Reset</span>
-                                        <% } else { %>
-                                            <span class="badge bg-success">Normal</span>
-                                        <% } %>
+                                            <% } else { %>
+                                                <span class="badge bg-success">Normal</span>
+                                                <% } %>
                                     </td>
 
                                     <td class="text-center">
                                         <% if (p.reset_requested) { %>
-                                            <form action="/admin/pelanggan/reset-password/<%= p.id %>"
-                                                method="POST" class="d-inline">
-                                                <input type="password"
-                                                    name="password_baru"
+                                            <form action="/admin/pelanggan/reset-password/<%= p.id %>" method="POST"
+                                                class="d-inline">
+                                                <input type="password" name="password_baru"
                                                     class="form-control form-control-sm mb-2"
-                                                    placeholder="Password baru"
-                                                    required minlength="6">
-                                                <button type="submit"
-                                                    class="btn btn-warning btn-sm fw-semibold"
+                                                    placeholder="Password baru" required minlength="6">
+                                                <button type="submit" class="btn btn-warning btn-sm fw-semibold"
                                                     onclick="return confirm('Yakin ingin mereset password pelanggan ini?')">
                                                     🔑 Reset Password
                                                 </button>
                                             </form>
-                                        <% } else { %>
-                                            <span class="text-muted small">Tidak ada permintaan</span>
-                                        <% } %>
+                                            <% } else { %>
+                                                <span class="text-muted small">Tidak ada permintaan</span>
+                                                <% } %>
                                     </td>
                                 </tr>
-                            <% }) %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    Belum ada data pelanggan.
-                                </td>
-                            </tr>
-                        <% } %>
+                                <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                Belum ada data pelanggan.
+                                            </td>
+                                        </tr>
+                                        <% } %>
                     </tbody>
                 </table>
             </div>
