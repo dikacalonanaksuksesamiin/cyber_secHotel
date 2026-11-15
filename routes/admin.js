@@ -16,16 +16,19 @@ const adminLoginLimiter = rateLimit({
 });
 
 // Konfigurasi Penyimpanan Gambar dengan Multer
+const uploadDir = process.env.VERCEL
+    ? '/tmp'
+    : path.join(__dirname, '../public/uploads');
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Nama file unik berdasarkan waktu
+        cb(null, Date.now() + path.extname(file.originalname));
     }
 });
 const upload = multer({ storage: storage });
@@ -141,13 +144,14 @@ router.post('/kamar/edit/:id', isAuthenticated, upload.single('foto'), async (re
         const oldData = await db.query('SELECT foto FROM kamar WHERE id = $1', [id]);
         let foto = oldData.rows[0] ? oldData.rows[0].foto : null;
 
-        // Jika upload foto baru, ganti yang lama
-        if (req.file) {
-            if (foto) {
-                const oldPath = path.join(__dirname, '../public/uploads', foto);
-                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        // Contoh pada rute edit & hapus kamar saat menghapus foto lama:
+        if (foto) {
+            try {
+                const filePath = path.join(uploadDir, foto);
+                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+            } catch (e) {
+                console.log('Lewati penghapusan file di read-only storage');
             }
-            foto = req.file.filename;
         }
 
         await db.query(

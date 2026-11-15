@@ -24,6 +24,7 @@ app.use(helmet({
 
 // Middleware Dasar
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('/tmp'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
