@@ -24,7 +24,23 @@ app.use(helmet({
 
 // Middleware Dasar
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static('/tmp'));
+// Sajikan gambar kamar baru yang tersimpan di database PostgreSQL
+app.get('/uploads/:filename', async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT mimetype, data FROM uploaded_files WHERE filename = $1',
+            [req.params.filename]
+        );
+        if (result.rows.length > 0) {
+            const imgBuffer = Buffer.from(result.rows[0].data, 'base64');
+            res.set('Content-Type', result.rows[0].mimetype);
+            return res.send(imgBuffer);
+        }
+        res.status(404).send('Gambar tidak ditemukan');
+    } catch (err) {
+        res.status(404).send('Gambar tidak ditemukan');
+    }
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 

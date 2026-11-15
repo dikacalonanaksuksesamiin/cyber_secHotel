@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + path.extname(file.originalname));
     }
 });
-const upload = multer({ storage: storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Middleware Keamanan Session
 const isAuthenticated = (req, res, next) => {
@@ -103,14 +103,28 @@ router.get('/dashboard', isAuthenticated, async (req, res) => {
 
 
 // 3. CREATE (Tambah Kamar - Form & Proses)
+// 3. CREATE (Tambah Kamar - Form & Proses)
 router.get('/kamar/tambah', isAuthenticated, (req, res) => {
     res.render('admin_tambah_kamar', { admin: req.session.adminUser });
 });
 
 router.post('/kamar/tambah', isAuthenticated, upload.single('foto'), async (req, res) => {
     const { nama_kamar, harga, status, keterangan } = req.body;
-    const foto = req.file ? req.file.filename : null;
+    const foto = req.file ? Date.now() + path.extname(req.file.originalname) : null;
     try {
+        if (req.file && foto) {
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS uploaded_files (
+                    filename TEXT PRIMARY KEY,
+                    mimetype TEXT NOT NULL,
+                    data TEXT NOT NULL
+                )
+            `);
+            await db.query(
+                'INSERT INTO uploaded_files (filename, mimetype, data) VALUES ($1, $2, $3)',
+                [foto, req.file.mimetype, req.file.buffer.toString('base64')]
+            );
+        }
         await db.query(
             'INSERT INTO kamar (nama_kamar, harga, status, keterangan, foto) VALUES ($1, $2, $3, $4, $5)',
             [nama_kamar, harga, status, keterangan, foto]
@@ -140,18 +154,26 @@ router.post('/kamar/edit/:id', isAuthenticated, upload.single('foto'), async (re
     const { nama_kamar, harga, status, keterangan } = req.body;
 
     try {
-        // Ambil data lama untuk cek foto
         const oldData = await db.query('SELECT foto FROM kamar WHERE id = $1', [id]);
         let foto = oldData.rows[0] ? oldData.rows[0].foto : null;
 
-        // Contoh pada rute edit & hapus kamar saat menghapus foto lama:
-        if (foto) {
-            try {
-                const filePath = path.join(uploadDir, foto);
-                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            } catch (e) {
-                console.log('Lewati penghapusan file di read-only storage');
+        if (req.file) {
+            const newFoto = Date.now() + path.extname(req.file.originalname);
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS uploaded_files (
+                    filename TEXT PRIMARY KEY,
+                    mimetype TEXT NOT NULL,
+                    data TEXT NOT NULL
+                )
+            `);
+            await db.query(
+                'INSERT INTO uploaded_files (filename, mimetype, data) VALUES ($1, $2, $3)',
+                [newFoto, req.file.mimetype, req.file.buffer.toString('base64')]
+            );
+            if (foto) {
+                await db.query('DELETE FROM uploaded_files WHERE filename = $1', [foto]).catch(() => {});
             }
+            foto = newFoto;
         }
 
         await db.query(
@@ -170,12 +192,8 @@ router.get('/kamar/hapus/:id', isAuthenticated, async (req, res) => {
     const { id } = req.params;
     try {
         const result = await db.query('SELECT foto FROM kamar WHERE id = $1', [id]);
-        if (result.rows.length > 0) {
-            const foto = result.rows[0].foto;
-            if (foto) {
-                const filePath = path.join(__dirname, '../public/uploads', foto);
-                if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-            }
+        if (result.rows.length > 0 && result.rows[0].foto) {
+            await db.query('DELETE FROM uploaded_files WHERE filename = $1', [result.rows[0].foto]).catch(() => {});
         }
         await db.query('DELETE FROM kamar WHERE id = $1', [id]);
         res.redirect('/admin/dashboard');
