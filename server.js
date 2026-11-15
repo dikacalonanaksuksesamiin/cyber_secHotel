@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cookieSession = require('cookie-session');
-const helmet = require('helmet'); // <-- 1. Import Helmet untuk amankan HTTP headers
+const helmet = require('helmet');
 const path = require('path');
 const db = require('./config/db');
 const indexRoutes = require('./routes/index');
@@ -17,21 +17,17 @@ app.engine('ejs', require('ejs').renderFile);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// 2. Terapkan Middleware Helmet
+// Middleware Helmet
 app.use(helmet({
-    contentSecurityPolicy: false, // Dinonaktifkan sementara agar CDN Bootstrap & gambar tidak terblokir
+    contentSecurityPolicy: false,
 }));
 
-// Middleware
+// Middleware Dasar
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'rahasia',
-    resave: false,
-    saveUninitialized: false
-}));
 
+// Konfigurasi Cookie Session untuk Vercel Serverless
 app.use(cookieSession({
     name: 'session_hotel_ayong',
     keys: [process.env.SESSION_SECRET || 'rahasia_hotel_ayong'],
@@ -40,14 +36,28 @@ app.use(cookieSession({
     sameSite: 'lax'
 }));
 
+// Penyesuaian kompatibilitas method express-session
+app.use((req, res, next) => {
+    if (req.session) {
+        if (!req.session.destroy) {
+            req.session.destroy = (cb) => {
+                req.session = null;
+                if (cb) cb();
+            };
+        }
+        if (!req.session.save) {
+            req.session.save = (cb) => {
+                if (cb) cb();
+            };
+        }
+    }
+    next();
+});
+
 // Middleware Global untuk Session Customer & Admin
 app.use((req, res, next) => {
-    if (req.session && !req.session.destroy) {
-        req.session.destroy = (cb) => {
-            req.session = null;
-            if (cb) cb();
-        };
-    }
+    res.locals.customer = req.session.customerName || null;
+    res.locals.isAdmin = req.session.isAdmin || false;
     next();
 });
 
@@ -55,10 +65,10 @@ app.use((req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/admin', adminRoutes);
 
-// Ekspor aplikasi agar bisa dibaca oleh Vercel
+// Ekspor aplikasi untuk Vercel
 module.exports = app;
 
-// Jalankan server lokal jika dijalankan secara langsung (di laptop)
+// Jalankan server lokal jika dijalankan di laptop
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
