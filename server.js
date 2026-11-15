@@ -9,6 +9,9 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
+// Wajib untuk Vercel agar mengenali proxy HTTPS
+app.set('trust proxy', 1);
+
 // Konfigurasi View Engine (EJS)
 app.engine('ejs', require('ejs').renderFile);
 app.set('view engine', 'ejs');
@@ -27,6 +30,17 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'rahasia',
     resave: false,
     saveUninitialized: false
+}));
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'rahasia',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // true jika di Vercel (HTTPS)
+        httpOnly: true,
+        sameSite: 'lax'
+    }
 }));
 
 // Middleware Global untuk Session Customer & Admin
