@@ -40,8 +40,13 @@ app.use((req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/admin', adminRoutes);
 
-// Jalankan Server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+// Ekspor aplikasi agar bisa dibaca oleh Vercel
+module.exports = app;
+
+// Jalankan server lokal jika dijalankan secara langsung (di laptop)
+if (require.main === module) {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server berjalan di http://localhost:${PORT}`);
+    });
+}
